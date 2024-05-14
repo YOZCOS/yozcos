@@ -1,0 +1,40 @@
+[11933.645509] pebs disable
+[11935.774567] run_bench.sh (40664): drop_caches: 3
+[11937.857209] pebs_init
+Preparing benchmark start...
+kernel.perf_event_max_sample_rate = 100000
+199
+100007
+1
+2
+100000
+2000000
+4
+500
+500
+4
+30
+1
+0
+disabled
+always
+always
+-----------------------
+NVM RATIO: static
+202405112327
+-----------------------
++memory
++cpuset
+40829
+enabled
+17179869184
+               total        used        free      shared  buff/cache   available
+Mem:        65551464      897160    64979888        1964       65488    64654304
+Swap:              0           0           0
+Generating edge list... done.
+Creating graph...pid: 40926
+execution time 9046.41 (s)
++memory
++cpuset
+40829
+disabled

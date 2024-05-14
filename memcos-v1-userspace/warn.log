@@ -1,0 +1,1 @@
+./scripts/run_bench.sh: line 96: 40922 Killed                  ${DIR}/scripts/memory_stat.sh ${LOG_DIR}

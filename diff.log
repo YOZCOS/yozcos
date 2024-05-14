@@ -1,0 +1,269 @@
+Only in ../linux-bak/arch/x86/include: generated
+Only in ../linux-bak: .cache
+Only in ../linux-bak/certs: signing_key.pem
+Only in ../linux-bak/certs: signing_key.x509
+Only in ../linux-bak/certs: x509.genkey
+Only in ../linux-bak: .cocciconfig
+Only in ../linux-bak: .config
+Only in ../linux-bak: .config.old
+Only in ../linux-bak: COPYING
+Only in linux: .git
+Only in ../linux-bak/include: config
+Only in ../linux-bak/include: generated
+diff -r linux/include/linux/htmm.h ../linux-bak/include/linux/htmm.h
+6c6
+< #define CPUS_PER_SOCKET 32
+---
+> #define CPUS_PER_SOCKET 20
+24d23
+< #define HTMM_NO_DEMOTION    0x4
+diff -r linux/include/linux/memcontrol.h ../linux-bak/include/linux/memcontrol.h
+361,363d360
+< 	unsigned long long total_dram_accesses;
+< 	unsigned long long total_nvm_accesses;
+< 	unsigned long long total_accesses;
+Only in ../linux-bak: info.log
+Only in ../linux-bak: ipc
+diff -r linux/mm/htmm_core.c ../linux-bak/mm/htmm_core.c
+1343d1342
+<     /*
+1346d1344
+<     */
+1374,1375d1371
+< 	memcg->total_dram_accesses++;
+< 	memcg->total_accesses++;
+1381,1382d1376
+< 	memcg->total_nvm_accesses++;
+< 	memcg->total_accesses++;
+diff -r linux/mm/htmm_migrater.c ../linux-bak/mm/htmm_migrater.c
+123c123
+<     if (htmm_mode == HTMM_NO_MIG || htmm_mode == HTMM_NO_DEMOTION)
+---
+>     if (htmm_mode == HTMM_NO_MIG)
+145,147d144
+<     if (htmm_mode == HTMM_NO_DEMOTION)
+< 	return 0;
+< 
+443c440
+< 	if (!PageActive(page) && (htmm_mode != HTMM_NO_MIG && htmm_mode != HTMM_NO_DEMOTION))
+---
+> 	if (!PageActive(page) && htmm_mode != HTMM_NO_MIG)
+651c648
+<     if (nr_to_promote == 0 && (htmm_mode == HTMM_NO_MIG || htmm_mode == HTMM_NO_DEMOTION)) {
+---
+>     if (nr_to_promote == 0 && htmm_mode == HTMM_NO_MIG) {
+Only in ../linux-bak/mm: .htmm_migrater.c.swp
+diff -r linux/mm/htmm_sampler.c ../linux-bak/mm/htmm_sampler.c
+106c106
+<     for (cpu = 0; cpu < CPUS_PER_SOCKET; cpu+=2) {
+---
+>     for (cpu = 0; cpu < CPUS_PER_SOCKET; cpu++) {
+128c128
+<     for (cpu = 0; cpu < CPUS_PER_SOCKET; cpu+=2) {
+---
+>     for (cpu = 0; cpu < CPUS_PER_SOCKET; cpu++) {
+130c130
+< 	    if (mem_event && mem_event[cpu] && mem_event[cpu][event])
+---
+> 	    if (mem_event[cpu][event])
+141c141
+<     for (cpu = 0; cpu < CPUS_PER_SOCKET; cpu+=2) {
+---
+>     for (cpu = 0; cpu < CPUS_PER_SOCKET; cpu++) {
+153c153
+<     for (cpu = 0; cpu < CPUS_PER_SOCKET; cpu+=2) {
+---
+>     for (cpu = 0; cpu < CPUS_PER_SOCKET; cpu++) {
+218d217
+< 	/*
+223d221
+< 	*/
+225c223
+< 	for (cpu = 0; cpu < CPUS_PER_SOCKET; cpu+=2) {
+---
+> 	for (cpu = 0; cpu < CPUS_PER_SOCKET; cpu++) {
+diff -r linux/mm/memcontrol.c ../linux-bak/mm/memcontrol.c
+7708,7735d7707
+< static int memcg_mem_accesses_show(struct seq_file *m, void *v)
+< {
+< 	struct mem_cgroup *memcg = mem_cgroup_from_css(seq_css(m));
+< 	struct seq_buf s;
+< 	int perc_hit_rate = 0, perc_dram_alloc = 0;
+< 	unsigned long long total_dram_accesses = 0, total_nvm_accesses = 0, total_accesses = 0;
+< 
+< 	seq_buf_init(&s, kmalloc(PAGE_SIZE, GFP_KERNEL), PAGE_SIZE);
+< 	if (!s.buffer)
+< 		return 0;
+< 
+< 	total_dram_accesses = memcg->total_dram_accesses;
+< 	total_nvm_accesses = memcg->total_nvm_accesses;
+< 	total_accesses = memcg->total_accesses;
+< 
+< 	if (total_accesses > 0)
+< 		perc_hit_rate = (int)(total_dram_accesses*100 / total_accesses);
+< 
+< 	seq_buf_printf(&s, "ACCESSES: dram %llu nvm or cxl %llu total %llu perc dram = %d \n",
+< 			total_dram_accesses, total_nvm_accesses, total_accesses, perc_hit_rate);
+< 
+< 	seq_puts(m, s.buffer);
+< 	kfree(s.buffer);
+< 
+< 	return 0;
+< }
+< 
+< 
+7745,7754d7716
+< static struct cftype memcg_mem_accesses_file[] = {
+<     {
+< 	.name = "mem_accesses",
+< 	.flags = CFTYPE_NOT_ON_ROOT,
+< 	.seq_show = memcg_mem_accesses_show,
+<     },
+<     {},
+< };
+< 
+< 
+7762,7770d7723
+< 
+< static int __init mem_cgroup_mem_accesses_init(void)
+< {
+<     WARN_ON(cgroup_add_dfl_cftypes(&memory_cgrp_subsys,
+< 		memcg_mem_accesses_file));
+<     return 0;
+< }
+< subsys_initcall(mem_cgroup_mem_accesses_init);
+< 
+diff -r linux/mm/mempolicy.c ../linux-bak/mm/mempolicy.c
+2124,2140d2123
+< 	    if (pol->mode == MPOL_BIND) {
+< 		    nmask = policy_nodemask(gfp, pol);
+< 		    if (nmask && nmask->bits && nmask->bits[0] != 1) {
+< 			    if (htmm_cxl_mode) {
+< 				    nid = 1;
+< 			    } else {
+< 				    if ((nid = next_demotion_node(nid)) == NUMA_NO_NODE) {
+< 					    nid = first_memory_node;
+< 				    }
+< 			    }
+< 			    pol->mode = MPOL_PREFERRED;
+< 			    mpol_cond_put(pol);
+< 			    page = __alloc_pages_node(nid, gfp, order);
+< 			    goto out;
+< 		    }
+< 	    }
+< 
+2155,2165d2137
+< 	    if (htmm_mode != HTMM_NO_DEMOTION) {
+< 		    if (orig_nid != nid) {
+< 			    WRITE_ONCE(memcg->nodeinfo[orig_nid]->need_demotion, true);
+< 			    kmigraterd_wakeup(orig_nid);
+< 		    }
+< 		    else if (max_nr_pages <= (get_nr_lru_pages_node(memcg, pgdat) +
+< 					    get_memcg_demotion_watermark(max_nr_pages))) {
+< 			    WRITE_ONCE(memcg->nodeinfo[nid]->need_demotion, true);
+< 			    kmigraterd_wakeup(nid);
+< 		    }
+< 	    }
+2166a2139,2148
+> 	    if (orig_nid != nid) {
+> 		WRITE_ONCE(memcg->nodeinfo[orig_nid]->need_demotion, true);
+> 		kmigraterd_wakeup(orig_nid);
+> 	    }
+> 	    else if (max_nr_pages <= (get_nr_lru_pages_node(memcg, pgdat) +
+> 			get_memcg_demotion_watermark(max_nr_pages))) {
+> 		WRITE_ONCE(memcg->nodeinfo[nid]->need_demotion, true);
+> 		kmigraterd_wakeup(nid);
+> 	    }
+> 	    
+3561d3542
+< 		case HTMM_NO_DEMOTION:
+Only in ../linux-bak: Module.symvers
+Only in ../linux-bak/scripts: asn1_compiler
+Only in ../linux-bak/scripts/basic: fixdep
+Only in ../linux-bak/scripts: bin2c
+Only in ../linux-bak/scripts: extract-cert
+Only in ../linux-bak/scripts/genksyms: genksyms
+Only in ../linux-bak/scripts: kallsyms
+Only in ../linux-bak/scripts/kconfig: conf
+Only in ../linux-bak/scripts/kconfig: mconf
+Only in ../linux-bak/scripts/kconfig: mconf-cfg
+Only in ../linux-bak/scripts/mod: devicetable-offsets.h
+Only in ../linux-bak/scripts/mod: elfconfig.h
+Only in ../linux-bak/scripts/mod: mk_elfconfig
+Only in ../linux-bak/scripts/mod: modpost
+Only in ../linux-bak/scripts: module.lds
+Only in ../linux-bak/scripts/selinux/genheaders: genheaders
+Only in ../linux-bak/scripts/selinux/mdp: mdp
+Only in ../linux-bak/scripts: sign-file
+Only in ../linux-bak/scripts: sorttable
+diff -r linux/tools/lib/subcmd/subcmd-util.h ../linux-bak/tools/lib/subcmd/subcmd-util.h
+28c28,32
+< #define zfree(ptr) ({ free(*ptr); *ptr = NULL; })
+---
+> #define zfree(ptr)                                                             \
+> 	({                                                                     \
+> 		free(*ptr);                                                    \
+> 		*ptr = NULL;                                                   \
+> 	})
+30c34
+< #define alloc_nr(x) (((x)+16)*3/2)
+---
+> #define alloc_nr(x) (((x) + 16) * 3 / 2)
+39,48c43,52
+< #define ALLOC_GROW(x, nr, alloc) \
+< 	do { \
+< 		if ((nr) > alloc) { \
+< 			if (alloc_nr(alloc) < (nr)) \
+< 				alloc = (nr); \
+< 			else \
+< 				alloc = alloc_nr(alloc); \
+< 			x = xrealloc((x), alloc * sizeof(*(x))); \
+< 		} \
+< 	} while(0)
+---
+> #define ALLOC_GROW(x, nr, alloc)                                               \
+> 	do {                                                                   \
+> 		if ((nr) > alloc) {                                            \
+> 			if (alloc_nr(alloc) < (nr))                            \
+> 				alloc = (nr);                                  \
+> 			else                                                   \
+> 				alloc = alloc_nr(alloc);                       \
+> 			x = xrealloc((x), alloc * sizeof(*(x)));               \
+> 		}                                                              \
+> 	} while (0)
+52,54c56,59
+< 	void *ret = realloc(ptr, size);
+< 	if (!ret && !size)
+< 		ret = realloc(ptr, 1);
+---
+> 	void *ret;
+> 	if (!size)
+> 		size = 1;
+> 	ret = realloc(ptr, size);
+57,58c62
+< 		if (!ret && !size)
+< 			ret = realloc(ptr, 1);
+---
+> 
+65,71c69,75
+< #define astrcatf(out, fmt, ...)						\
+< ({									\
+< 	char *tmp = *(out);						\
+< 	if (asprintf((out), "%s" fmt, tmp ?: "", ## __VA_ARGS__) == -1)	\
+< 		die("asprintf failed");					\
+< 	free(tmp);							\
+< })
+---
+> #define astrcatf(out, fmt, ...)                                                \
+> 	({                                                                     \
+> 		char *tmp = *(out);                                            \
+> 		if (asprintf((out), "%s" fmt, tmp ?: "", ##__VA_ARGS__) == -1) \
+> 			die("asprintf failed");                                \
+> 		free(tmp);                                                     \
+> 	})
+Only in ../linux-bak/tools/objtool/arch/x86: lib
+Only in ../linux-bak/tools/objtool: fixdep
+Only in ../linux-bak/tools/objtool: objtool
+Only in ../linux-bak: .version
+Only in ../linux-bak: .vscode
+Only in ../linux-bak: warn.log
