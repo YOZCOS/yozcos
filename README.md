@@ -212,7 +212,7 @@ DAMON（Data Access MONitor）被提及作为一种内存访问监控工具，�
 
 ## **系统架构图**
 
-![mermaid-diagram-2024-05-24-115914](./assets/mermaid-diagram-2024-05-24-115914.png)
+![overview](./assets/overview.png)
 
 ​    
 
