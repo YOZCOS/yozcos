@@ -7735,6 +7735,30 @@ static int memcg_mem_accesses_show(struct seq_file *m, void *v)
 	return 0;
 }
 
+static int memcg_page_count_show(struct seq_file *m, void *v)
+{
+	struct mem_cgroup *memcg = mem_cgroup_from_css(seq_css(m));
+	struct seq_buf s;
+	int i;
+
+	seq_buf_init(&s, kmalloc(PAGE_SIZE, GFP_KERNEL), PAGE_SIZE);
+	if (!s.buffer)
+		return 0;
+
+	seq_buf_printf(&s, "warm_threshold %lu hot_threshold %lu ", memcg->warm_threshold, memcg->active_threshold);
+
+	seq_buf_printf(%s, "page ", memcg->hotness_hg[i]);
+	for (i = 0; i < 16; i++) {
+		seq_buf_printf(%s, "%lu ", memcg->hotness_hg[i]);
+	}
+	seq_buf_printf(%s, "\n");
+
+	seq_puts(m, s.buffer);
+	kfree(s.buffer);
+
+	return 0;
+}
+
 static struct cftype memcg_hotness_stat_file[] = {
 	{
 		.name = "hotness_stat",
@@ -7749,6 +7773,15 @@ static struct cftype memcg_mem_accesses_file[] = {
 		.name = "mem_accesses",
 		.flags = CFTYPE_NOT_ON_ROOT,
 		.seq_show = memcg_mem_accesses_show,
+	},
+	{},
+};
+
+static struct cftype memcg_page_count_file[] = {
+	{
+		.name = "page_count",
+		.flags = CFTYPE_NOT_ON_ROOT,
+		.seq_show = memcg_page_count_show,
 	},
 	{},
 };
@@ -7768,6 +7801,14 @@ static int __init mem_cgroup_mem_accesses_init(void)
 	return 0;
 }
 subsys_initcall(mem_cgroup_mem_accesses_init);
+
+static int __init mem_cgroup_page_count_init(void)
+{
+	WARN_ON(cgroup_add_dfl_cftypes(&memory_cgrp_subsys,
+				       memcg_page_count_file));
+	return 0;
+}
+subsys_initcall(mem_cgroup_page_count_init);
 
 static int memcg_per_node_max_show(struct seq_file *m, void *v)
 {
